@@ -125,7 +125,7 @@ Deux modes d'exécution coexistent :
 ## Structure du projet
 
 ```
-p1/
+bedrock-agentcore-migrations/
 ├── agentcore/                  # Configuration AgentCore (source de vérité)
 │   ├── agentcore.json          # Spec du projet (runtime, env vars, gateway)
 │   ├── aws-targets.json        # Cibles de déploiement (account, region)
@@ -175,7 +175,7 @@ p1/
 ### 1. Installer les dépendances Python
 
 ```bash
-cd p1/app/ippon_assistant
+cd bedrock-agentcore-migrations/app/ippon_assistant
 uv sync
 ```
 
@@ -184,7 +184,7 @@ uv sync
 Par défaut, l'agent tourne localement avec Strands et se connecte au Gateway MCP via HTTP.
 
 ```bash
-cd p1/app/ippon_assistant
+cd bedrock-agentcore-migrations/app/ippon_assistant
 uv run python -m uvicorn web_app:app --reload --port 8080
 ```
 
@@ -195,7 +195,7 @@ Ouvrir [http://localhost:8080](http://localhost:8080) dans le navigateur.
 Passer la variable d'environnement `USE_AGENTCORE=true` pour que le serveur local appelle le runtime déployé au lieu de l'agent local.
 
 ```bash
-cd p1/app/ippon_assistant
+cd bedrock-agentcore-migrations/app/ippon_assistant
 USE_AGENTCORE=true uv run python -m uvicorn web_app:app --reload --port 8080
 ```
 
@@ -209,7 +209,7 @@ curl http://localhost:8080/mode
 ### 4. Tester l'agent directement (sans UI)
 
 ```bash
-cd p1/app/ippon_assistant
+cd bedrock-agentcore-migrations/app/ippon_assistant
 uv run python -c "
 import asyncio
 from agent import get_or_create_agent
@@ -227,7 +227,7 @@ asyncio.run(main())
 ### 5. Tester via AgentCore CLI
 
 ```bash
-cd p1
+cd bedrock-agentcore-migrations
 agentcore invoke --prompt "Estime le coût d'un cluster ECS avec 3 instances t3.large"
 ```
 
@@ -249,7 +249,7 @@ Le déploiement de l'agent sur Amazon Bedrock AgentCore Runtime se fait via la C
 ### Déployer
 
 ```bash
-cd p1
+cd bedrock-agentcore-migrations
 agentcore deploy
 ```
 
@@ -273,7 +273,7 @@ agentcore invoke --prompt "Liste les services AWS disponibles dans l'API Pricing
 ### Déployer via CDK directement
 
 ```bash
-cd p1/agentcore/cdk
+cd bedrock-agentcore-migrations/agentcore/cdk
 npm install
 npx cdk synth   # Prévisualiser le template CloudFormation
 npx cdk deploy  # Déployer
@@ -312,7 +312,7 @@ La stack `IpponAssistantStack` déploie le frontend web (Lambda + API Gateway + 
 ### 1. Builder le package Lambda
 
 ```bash
-cd p1/app/ippon_assistant
+cd bedrock-agentcore-migrations/app/ippon_assistant
 bash build_lambda.sh
 ```
 
@@ -321,7 +321,7 @@ Cela crée `lambda_package/` avec toutes les dépendances et le code applicatif.
 ### 2. Déployer la stack CDK
 
 ```bash
-cd p1/infra/cdk
+cd bedrock-agentcore-migrations/infra/cdk
 npm install
 npx cdk deploy
 ```
