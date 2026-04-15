@@ -1,0 +1,16 @@
+{
+  "targets": {
+    "default": {
+      "resources": {
+        "runtimes": {
+          "ippon_assistant": {
+            "runtimeId": "IpponAWSAssistant_ippon_assistant-D1SGcJ7zxc",
+            "runtimeArn": "arn:aws:bedrock-agentcore:us-east-1:800881206773:runtime/IpponAWSAssistant_ippon_assistant-D1SGcJ7zxc",
+            "roleArn": "arn:aws:iam::800881206773:role/AgentCore-IpponAWSAssista-ApplicationAgentIpponAssi-f1SaUDEqorv8"
+          }
+        },
+        "stackName": "AgentCore-IpponAWSAssistant-default"
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.agentcore.aws.dev/v1/agentcore.json",
+  "name": "IpponAWSAssistant",
+  "version": 1,
+  "managedBy": "CDK",
+  "tags": {
+    "agentcore:created-by": "agentcore-cli",
+    "agentcore:project-name": "IpponAWSAssistant"
+  },
+  "runtimes": [
+    {
+      "name": "ippon_assistant",
+      "build": "CodeZip",
+      "entrypoint": "main.py",
+      "codeLocation": "app/ippon_assistant/",
+      "runtimeVersion": "PYTHON_3_13",
+      "networkMode": "PUBLIC",
+      "protocol": "HTTP",
+      "envVars": [
+        { "name": "GATEWAY_MCP_URL", "value": "https://gateway-pricing-test-baixjwtpjs.gateway.bedrock-agentcore.us-east-1.amazonaws.com/mcp" },
+        { "name": "AWS_REGION", "value": "us-east-1" }
+      ]
+    }
+  ],
+  "memories": [],
+  "credentials": [],
+  "evaluators": [],
+  "onlineEvalConfigs": [],
+  "agentCoreGateways": [],
+  "policyEngines": []
+}

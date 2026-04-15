@@ -1,0 +1,63 @@
+{
+  "mcp": {
+    "tools": [
+      {
+        "name": "list_services",
+        "description": "List all AWS services available in the Pricing API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      {
+        "name": "get_attribute_values",
+        "description": "Get valid attribute values for a given AWS service (e.g. instanceType for AmazonEC2)",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "service_code": {
+              "type": "string",
+              "description": "AWS service code e.g. AmazonEC2, AmazonRDS"
+            },
+            "attribute_name": {
+              "type": "string",
+              "description": "Attribute name e.g. instanceType, location"
+            }
+          },
+          "required": ["service_code", "attribute_name"]
+        }
+      },
+      {
+        "name": "get_pricing",
+        "description": "Get real-time AWS pricing for a service with filters. Returns on-demand prices.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "service_code": {
+              "type": "string",
+              "description": "AWS service code e.g. AmazonEC2, AmazonRDS, AmazonS3"
+            },
+            "filters": {
+              "type": "array",
+              "description": "List of {Field, Value} filter objects for TERM_MATCH",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "Field": { "type": "string" },
+                  "Value": { "type": "string" }
+                }
+              }
+            },
+            "max_results": {
+              "type": "integer",
+              "description": "Max number of results (default 10)",
+              "default": 10
+            }
+          },
+          "required": ["service_code", "filters"]
+        }
+      }
+    ]
+  }
+}

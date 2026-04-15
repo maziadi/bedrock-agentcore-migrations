@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ippon Assistant</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1060 0%, #6b21a8 50%, #c026d3 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    /* ── widget container ── */
+    .widget {
+      width: 840px;
+      height: 680px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── header ── */
+    .widget-header {
+      background: linear-gradient(135deg, #ff6a00, #ff9900);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .header-info { flex: 1; }
+    .header-info h1 { font-size: .95rem; font-weight: 700; color: #fff; }
+    .header-info .status {
+      font-size: .72rem; color: rgba(255,255,255,.85);
+      display: flex; align-items: center; gap: 5px; margin-top: 2px;
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 0 2px rgba(74,222,128,.3);
+    }
+
+    .header-actions { display: flex; gap: 10px; }
+    .header-actions button {
+      background: rgba(255,255,255,.2);
+      border: none; border-radius: 8px;
+      color: #fff; font-size: .8rem;
+      padding: 5px 9px; cursor: pointer;
+      transition: background .2s;
+    }
+    .header-actions button:hover { background: rgba(255,255,255,.35); }
+
+    /* ── chat area ── */
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #f8f9fc;
+    }
+
+    #chat-container::-webkit-scrollbar { width: 4px; }
+    #chat-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+
+    /* ── messages ── */
+    .message { display: flex; gap: 9px; max-width: 100%; }
+    .message.user { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, #ff6a00, #ff9900);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; flex-shrink: 0; align-self: flex-end;
+    }
+
+    .msg-content { display: flex; flex-direction: column; gap: 3px; max-width: 68%; }
+    .message.user .msg-content { align-items: flex-end; }
+
+    .msg-label {
+      font-size: .67rem; color: #aaa;
+      text-transform: uppercase; letter-spacing: .04em;
+      padding: 0 4px;
+    }
+
+    .bubble {
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: .86rem;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    /* user bubble */
+    .user .bubble {
+      background: linear-gradient(135deg, #ff6a00, #ff9900);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+      white-space: pre-wrap;
+    }
+
+    /* bot bubble */
+    .assistant .bubble {
+      background: #fff;
+      color: #1a1a2e;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    /* file badge */
+    .file-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,.25);
+      border-radius: 8px; padding: 2px 8px;
+      font-size: .73rem; margin-bottom: 5px;
+    }
+
+    /* ── markdown inside bot bubble ── */
+    .md-body h1,.md-body h2,.md-body h3 {
+      color: #ff6a00; margin: 12px 0 5px; font-size: .95rem;
+    }
+    .md-body p { margin: 5px 0; }
+    .md-body ul,.md-body ol { margin: 5px 0 5px 18px; }
+    .md-body li { margin: 2px 0; }
+    .md-body strong { color: #c2410c; }
+    .md-body a { color: #ea580c; }
+
+    .md-body table {
+      border-collapse: collapse; width: 100%;
+      margin: 8px 0; font-size: .78rem;
+    }
+    .md-body th {
+      background: #fff7ed; color: #c2410c;
+      padding: 6px 10px; text-align: left;
+      border: 1px solid #fed7aa;
+    }
+    .md-body td {
+      padding: 5px 10px; border: 1px solid #fed7aa;
+      color: #374151;
+    }
+    .md-body tr:nth-child(even) td { background: #fffbf5; }
+    .md-body tr:last-child td { font-weight: 700; color: #c2410c; }
+
+    .code-wrapper { position: relative; margin: 6px 0; }
+    .code-wrapper pre {
+      background: #1e1e2e !important;
+      border-radius: 10px; padding: 10px 12px;
+      overflow-x: auto; font-size: .76rem;
+    }
+    .copy-btn {
+      position: absolute; top: 6px; right: 7px;
+      background: #374151; color: #d1d5db;
+      border: none; border-radius: 5px;
+      padding: 2px 7px; font-size: .68rem;
+      cursor: pointer; opacity: 0; transition: opacity .15s;
+    }
+    .code-wrapper:hover .copy-btn { opacity: 1; }
+    .copy-btn.copied { color: #4ade80; }
+    .md-body code:not(pre code) {
+      background: #fff7ed; padding: 1px 5px;
+      border-radius: 4px; font-size: .8em; color: #c2410c;
+    }
+
+    /* ── typing indicator ── */
+    .typing-indicator { display: flex; align-items: center; gap: 4px; padding: 4px 2px; }
+    .typing-indicator span {
+      width: 7px; height: 7px; background: #d1d5db;
+      border-radius: 50%; display: inline-block;
+      animation: blink 1.2s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: .2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: .4s; }
+    @keyframes blink {
+      0%,80%,100% { opacity: .25; transform: scale(.85); }
+      40%          { opacity: 1;   transform: scale(1.1); }
+    }
+
+    /* ── input area ── */
+    #input-area {
+      background: #fff;
+      border-top: 1px solid #f0f0f5;
+      padding: 10px 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    #file-row { display: flex; align-items: center; gap: 8px; }
+
+    #file-label {
+      font-size: .72rem; color: #9ca3af; cursor: pointer;
+      padding: 4px 10px;
+      border: 1.5px dashed #e5e7eb;
+      border-radius: 20px;
+      transition: border-color .2s, color .2s;
+      white-space: nowrap;
+    }
+    #file-label:hover { border-color: #ff9900; color: #ff9900; }
+    #spec-file { display: none; }
+
+    #file-pill {
+      display: none; align-items: center; gap: 5px;
+      background: #fff7ed; border: 1px solid #fed7aa;
+      border-radius: 20px; padding: 3px 10px;
+      font-size: .72rem; color: #c2410c;
+    }
+    #file-pill.visible { display: flex; }
+    #file-pill button {
+      background: none; border: none; color: #c2410c;
+      cursor: pointer; font-size: .8rem; padding: 0 2px;
+    }
+
+    #message-row { display: flex; gap: 8px; align-items: flex-end; }
+
+    #user-input {
+      flex: 1;
+      background: #f3f4f6;
+      border: 1.5px solid transparent;
+      border-radius: 22px;
+      color: #1a1a2e;
+      padding: 10px 16px;
+      font-size: .86rem;
+      resize: none;
+      outline: none;
+      min-height: 42px;
+      max-height: 120px;
+      font-family: inherit;
+      transition: border-color .2s;
+    }
+    #user-input::placeholder { color: #9ca3af; }
+    #user-input:focus { border-color: #ff9900; background: #fff; }
+
+    #send-btn {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, #ff6a00, #ff9900);
+      color: #fff; border: none; border-radius: 50%;
+      font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: opacity .2s, transform .15s;
+      box-shadow: 0 4px 12px rgba(255,153,0,.4);
+    }
+    #send-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+    #send-btn:hover:not(:disabled) { opacity: .9; transform: scale(1.05); }
+
+    .footer-note {
+      text-align: center; font-size: .65rem; color: #c0c0cc; padding-top: 2px;
+    }
+    .footer-note span { color: #ff9900; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="widget">
+
+  <!-- header -->
+  <div class="widget-header">
+    <div class="avatar">☁️</div>
+    <div class="header-info">
+      <h1>Ippon Assistant</h1>
+      <div class="status"><span class="status-dot"></span> Online Now</div>
+    </div>
+    <div class="header-actions">
+      <button title="Clear chat" onclick="clearChat()">🗑</button>
+    </div>
+  </div>
+
+  <!-- messages -->
+  <div id="chat-container">
+    <!-- welcome message -->
+    <div class="message assistant">
+      <div class="msg-avatar">🤖</div>
+      <div class="msg-content">
+        <div class="msg-label">Agent</div>
+        <div class="bubble">
+          <div class="md-body">
+            <p>👋 Hi! I'm your <strong>Ippon Assistant</strong>.</p>
+            <p>Upload a spec file or describe your infrastructure and I'll give you a detailed cost breakdown.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- input -->
+  <div id="input-area">
+    <div id="file-row">
+      <label id="file-label" for="spec-file">📎 Attach spec</label>
+      <input type="file" id="spec-file" accept=".yaml,.yml,.json,.txt,.csv" />
+      <div id="file-pill">
+        <span id="file-pill-name"></span>
+        <button id="file-clear" title="Remove">✕</button>
+      </div>
+    </div>
+    <div id="message-row">
+      <textarea id="user-input" rows="1" placeholder="Describe your infrastructure…"></textarea>
+      <button id="send-btn" title="Send">➤</button>
+    </div>
+    <div class="footer-note">Powered by <span>Amazon Bedrock</span> · AWS Pricing API</div>
+  </div>
+
+</div>
+
+<script>
+  // ── marked config ─────────────────────────────────────────────────
+  marked.setOptions({ breaks: true, gfm: true });
+  const renderer = new marked.Renderer();
+  renderer.code = ({ text, lang }) => {
+    const esc = text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    return `<div class="code-wrapper"><pre><code class="language-${lang||''}">${esc}</code></pre><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>`;
+  };
+  marked.use({ renderer });
+
+  function copyCode(btn) {
+    navigator.clipboard.writeText(btn.previousElementSibling.querySelector("code").innerText).then(() => {
+      btn.textContent = "✓"; btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1800);
+    });
+  }
+
+  // ── refs ──────────────────────────────────────────────────────────
+  const chat         = document.getElementById("chat-container");
+  const userInput    = document.getElementById("user-input");
+  const sendBtn      = document.getElementById("send-btn");
+  const specFile     = document.getElementById("spec-file");
+  const filePill     = document.getElementById("file-pill");
+  const filePillName = document.getElementById("file-pill-name");
+
+  document.getElementById("file-clear").addEventListener("click", clearFile);
+  specFile.addEventListener("change", () => {
+    const f = specFile.files[0];
+    if (f) { filePillName.textContent = f.name; filePill.classList.add("visible"); }
+  });
+
+  function clearFile() {
+    specFile.value = ""; filePill.classList.remove("visible"); filePillName.textContent = "";
+  }
+
+  function clearChat() {
+    chat.innerHTML = "";
+  }
+
+  userInput.addEventListener("input", () => {
+    userInput.style.height = "auto";
+    userInput.style.height = Math.min(userInput.scrollHeight, 120) + "px";
+  });
+  userInput.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  sendBtn.addEventListener("click", sendMessage);
+
+  function scrollBottom() { chat.scrollTop = chat.scrollHeight; }
+
+  // ── append helpers ────────────────────────────────────────────────
+  function appendUserMsg(text, fileName) {
+    const el = document.createElement("div");
+    el.className = "message user";
+    let inner = "";
+    if (fileName) inner += `<div class="file-badge">📄 ${fileName}</div><br>`;
+    inner += text.replace(/</g,"&lt;");
+    el.innerHTML = `
+      <div class="msg-content">
+        <div class="msg-label">You</div>
+        <div class="bubble">${inner}</div>
+      </div>`;
+    chat.appendChild(el); scrollBottom();
+  }
+
+  function appendTyping() {
+    const el = document.createElement("div");
+    el.className = "message assistant"; el.id = "typing-msg";
+    el.innerHTML = `
+      <div class="msg-avatar">🤖</div>
+      <div class="msg-content">
+        <div class="msg-label">Agent</div>
+        <div class="bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>
+      </div>`;
+    chat.appendChild(el); scrollBottom();
+  }
+
+  function createBotBubble() {
+    const el = document.createElement("div");
+    el.className = "message assistant";
+    const mdBody = document.createElement("div");
+    mdBody.className = "md-body";
+    el.innerHTML = `
+      <div class="msg-avatar">🤖</div>
+      <div class="msg-content">
+        <div class="msg-label">Agent</div>
+        <div class="bubble"></div>
+      </div>`;
+    el.querySelector(".bubble").appendChild(mdBody);
+    chat.appendChild(el);
+    return mdBody;
+  }
+
+  // ── send ──────────────────────────────────────────────────────────
+  async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    const file = specFile.files[0] || null;
+    appendUserMsg(text, file?.name);
+    userInput.value = ""; userInput.style.height = "auto";
+    sendBtn.disabled = true;
+    appendTyping();
+
+    const fd = new FormData();
+    fd.append("message", text);
+    if (file) fd.append("spec_file", file);
+
+    let raw = "";
+    try {
+      const res = await fetch("/chat", { method: "POST", body: fd });
+      const contentType = res.headers.get("content-type") || "";
+
+      // JSON mode (Lambda) — wait for full response
+      if (contentType.includes("application/json")) {
+        document.getElementById("typing-msg")?.remove();
+        const data = await res.json();
+        const mdBody = createBotBubble();
+        if (data.error) {
+          mdBody.innerHTML = `<p>⚠️ ${data.error}</p>`;
+        } else {
+          mdBody.innerHTML = marked.parse(data.response || "");
+        }
+        scrollBottom();
+        return;
+      }
+
+      // SSE mode (local) — stream chunks
+      const reader = res.body.getReader();
+      const dec    = new TextDecoder();
+      document.getElementById("typing-msg")?.remove();
+      const mdBody = createBotBubble();
+      let buf = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split("\n"); buf = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          let chunk = line.slice(6);
+          if (chunk === "[DONE]") break;
+          // Decode JSON-encoded strings from AgentCore (e.g. "hello" → hello)
+          try {
+            const decoded = JSON.parse(chunk);
+            if (typeof decoded === "string") chunk = decoded;
+          } catch(e) { /* not JSON, use raw */ }
+          if (!chunk) continue;
+          raw += chunk.startsWith("[ERROR]")
+            ? "\n⚠️ " + chunk.replace("[ERROR] ","")
+            : chunk.replace(/\\n/g,"\n");
+          mdBody.innerHTML = marked.parse(raw);
+          scrollBottom();
+        }
+      }
+    } catch (err) {
+      document.getElementById("typing-msg")?.remove();
+      const mdBody = createBotBubble();
+      mdBody.innerHTML = `<p>⚠️ ${err.message}</p>`;
+    } finally {
+      sendBtn.disabled = false;
+      clearFile();
+    }
+  }
+</script>
+</body>
+</html>
