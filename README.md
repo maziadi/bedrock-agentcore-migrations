@@ -60,6 +60,8 @@ Deux modes d'exécution coexistent :
 
 ![Architecture HLD](docs/architecture.png)
 
+
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Utilisateur                             │
@@ -126,9 +128,11 @@ Deux modes d'exécution coexistent :
 
 ## Demo chatbot pricing
 
-![Chatbot-welcome](docs/chatbot-1.png)
+![Chatbot-welcome1](docs/chatbot-w1.png)
 
-![Chatbot-request](docs/chatbot-2.png)
+![Chatbot-welcome2](docs/chatbot-w2.png)
+
+![Chatbot-request](docs/chatbot-pricing-request.png)
 
 
 ## Structure du projet
