@@ -58,6 +58,8 @@ Deux modes d'exécution coexistent :
 
 ## Architecture AWS
 
+![Architecture HLD](docs/architecture.png)
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Utilisateur                             │
@@ -121,6 +123,13 @@ Deux modes d'exécution coexistent :
 **CloudFront** — point d'entrée unique. Route `/static/*` vers S3, tout le reste vers API Gateway.
 
 ---
+
+## Demo chatbot pricing
+
+![Chatbot-welcome](docs/chatbot-1.png)
+
+![Chatbot-request](docs/chatbot-2.png)
+
 
 ## Structure du projet
 
